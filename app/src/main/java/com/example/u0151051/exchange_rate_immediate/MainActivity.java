@@ -36,7 +36,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        findid();
+        try {
+            findid();
+            Parser(urlData);
+        } catch (Exception e) {
+            Toast.makeText(MainActivity.this, e.toString(), Toast.LENGTH_LONG).show();
+        }
     }
 
     void findid() {
@@ -56,11 +61,8 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 urlData = GetURLData();
             }
-        });
-
-        Parser(urlData);
+        }).setPriority(Thread.MAX_PRIORITY);
         //alertDialog = getAlertDialog("選擇匯率為");
-
     }
 
     View.OnClickListener c = new View.OnClickListener() {
@@ -114,16 +116,16 @@ public class MainActivity extends AppCompatActivity {
     public void Parser(String urlData) {
         try {
             String temp = null;
-            int start = 0;
+            int start1 = 0;
             int end = 0;
             int count = 0;
             do {
                 // 1.現金買入
                 // indexOf中的html碼要到該網頁去擷取這段html,知道我們要的頭和尾
-                start = urlData.indexOf("<td data-table=\"本行現金買入\" class=\"rate-content-cash text-right print_hide\">",
+                start1 = urlData.indexOf("<td data-table=\"本行現金買入\" class=\"rate-content-cash text-right print_hide\">",
                         end + 1);
-                end = urlData.indexOf("</td>", start + 1);
-                temp = urlData.substring(start + 72, end);
+                end = urlData.indexOf("</td>", start1 + 1);
+                temp = urlData.substring(start1 + 72, end);
                 //如果無資料
                 if (!temp.equals("-")) {
                     buy_cash.add(temp);
@@ -131,32 +133,32 @@ public class MainActivity extends AppCompatActivity {
                     buy_cash.add("無資料");
                 }
                 // 2.現金賣出
-                start = urlData.indexOf("<td data-table=\"本行現金賣出\" class=\"rate-content-cash text-right print_hide\">",
+                start1 = urlData.indexOf("<td data-table=\"本行現金賣出\" class=\"rate-content-cash text-right print_hide\">",
                         end + 1);
-                end = urlData.indexOf("</td>", start + 1);
-                temp = urlData.substring(start + 72, end);
+                end = urlData.indexOf("</td>", start1 + 1);
+                temp = urlData.substring(start1 + 72, end);
                 if (!temp.equals("-")) {
                     sell_cash.add(temp);
                 } else {
                     sell_cash.add("無資料");
                 }
                 // 3.即期買入
-                start = urlData.indexOf(
+                start1 = urlData.indexOf(
                         "<td data-table=\"本行即期買入\" class=\"rate-content-sight text-right print_hide\" data-hide=\"phone\">",
                         end + 1);
-                end = urlData.indexOf("</td>", start + 1);
-                temp = urlData.substring(start + 91, end);
+                end = urlData.indexOf("</td>", start1 + 1);
+                temp = urlData.substring(start1 + 91, end);
                 if (!temp.equals("-")) {
                     buy_curren_rate.add(temp);
                 } else {
                     buy_curren_rate.add("無資料");
                 }
                 //4. 即期賣出
-                start = urlData.indexOf(
+                start1 = urlData.indexOf(
                         "<td data-table=\"本行即期賣出\" class=\"rate-content-sight text-right print_hide\" data-hide=\"phone\">",
                         end + 1);
-                end = urlData.indexOf("</td>", start + 1);
-                temp = urlData.substring(start + 91, end);
+                end = urlData.indexOf("</td>", start1 + 1);
+                temp = urlData.substring(start1 + 91, end);
                 if (!temp.equals("-")) {
                     sell_current_rate.add(temp);
                 } else {
