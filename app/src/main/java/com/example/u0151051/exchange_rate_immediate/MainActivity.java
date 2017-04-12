@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
                 urlData = GetURLData();
             }
         });
+
         Parser(urlData);
         //alertDialog = getAlertDialog("選擇匯率為");
 
