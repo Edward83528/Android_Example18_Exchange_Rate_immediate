@@ -51,7 +51,12 @@ public class MainActivity extends AppCompatActivity {
         //Android4.0在網路的部份多了一個新的Exception，叫做android.os.NetworkOnMainThreadException
         //意思就是說：網路的活動跑在主要執行緒上了，很貼心的告訴你，這樣子你的APP可能會因為網路的活動等待回應太久，而被系統強制關閉
         //改用要用多執行緒的方式來執行
-        urlData = GetURLData();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                urlData = GetURLData();
+            }
+        });
         Parser(urlData);
         //alertDialog = getAlertDialog("選擇匯率為");
 
