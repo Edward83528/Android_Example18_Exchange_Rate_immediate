@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
     List<String> sell_cash;// 現金買出
     List<String> buy_curren_rate;// 即期買入
     List<String> sell_current_rate;// 即期賣出
-    String urlData = null;
+    static String urlData = null;
 
     //載入畫面
     @Override
@@ -38,10 +38,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         try {
             findid();
-            Parser(urlData);
+
         } catch (Exception e) {
             Toast.makeText(MainActivity.this, e.toString(), Toast.LENGTH_LONG).show();
         }
+
     }
 
     void findid() {
@@ -62,7 +63,8 @@ public class MainActivity extends AppCompatActivity {
                 urlData = GetURLData();
             }
         }).setPriority(Thread.MAX_PRIORITY);
-        //alertDialog = getAlertDialog("選擇匯率為");
+        Parser(urlData);
+        alertDialog = getAlertDialog("選擇匯率為");
     }
 
     View.OnClickListener c = new View.OnClickListener() {
