@@ -36,22 +36,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        try {
-            findid();
-
-        } catch (Exception e) {
-            Toast.makeText(MainActivity.this, e.toString(), Toast.LENGTH_LONG).show();
-        }
-
+        findview();
     }
 
-    void findid() {
+    void findview() {
         sp = (Spinner) findViewById(R.id.spinner);
         sp.setOnItemSelectedListener(onItemSelectedListener);
         btn = (Button) findViewById(R.id.button);
         btn.setOnClickListener(c);
-        buy_cash = new ArrayList<String>();// 現金買進
-        sell_cash = new ArrayList<String>();// 現金買出
+        buy_cash = new ArrayList<String>();//現金買進
+        sell_cash = new ArrayList<String>();//現金買出
         buy_curren_rate = new ArrayList<String>();// 即期買入
         sell_current_rate = new ArrayList<String>();// 即期賣出
         //Android4.0在網路的部份多了一個新的Exception，叫做android.os.NetworkOnMainThreadException
@@ -61,17 +55,25 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 urlData = GetURLData();
+                Parser(urlData);
+                try {
+                    alertDialog = getAlertDialog("選擇匯率為");
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, "對話框設定錯誤", Toast.LENGTH_LONG).show();
+                }
             }
-        }).setPriority(Thread.MAX_PRIORITY);
-        Parser(urlData);
-        alertDialog = getAlertDialog("選擇匯率為");
+        }).start();
     }
 
     View.OnClickListener c = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             //按下button顯示對話框
-            alertDialog.show();
+            try {
+                alertDialog.show();
+            } catch (Exception e) {
+                Toast.makeText(MainActivity.this, "對話框顯示錯誤", Toast.LENGTH_LONG).show();
+            }
         }
     };
     AdapterView.OnItemSelectedListener onItemSelectedListener = new AdapterView.OnItemSelectedListener() {
@@ -108,74 +110,79 @@ public class MainActivity extends AppCompatActivity {
             }
             in.close();
         } catch (Exception e) {
-            Toast.makeText(MainActivity.this, e.toString(), Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.this, e.toString() + "連網路撈資料步驟錯誤", Toast.LENGTH_LONG).show();
             Log.e("Error", e.toString());
         }
         return urlData;
     }
 
     // 傳進來的網頁字串用indexOf比對我們要的資料的位置在哪,再利用substring得到我們要的字串資料
-    public void Parser(String urlData) {
-        try {
-            String temp = null;
-            int start1 = 0;
-            int end = 0;
-            int count = 0;
-            do {
-                // 1.現金買入
-                // indexOf中的html碼要到該網頁去擷取這段html,知道我們要的頭和尾
-                start1 = urlData.indexOf("<td data-table=\"本行現金買入\" class=\"rate-content-cash text-right print_hide\">",
-                        end + 1);
-                end = urlData.indexOf("</td>", start1 + 1);
-                temp = urlData.substring(start1 + 72, end);
-                //如果無資料
-                if (!temp.equals("-")) {
-                    buy_cash.add(temp);
-                } else {
-                    buy_cash.add("無資料");
-                }
-                // 2.現金賣出
-                start1 = urlData.indexOf("<td data-table=\"本行現金賣出\" class=\"rate-content-cash text-right print_hide\">",
-                        end + 1);
-                end = urlData.indexOf("</td>", start1 + 1);
-                temp = urlData.substring(start1 + 72, end);
-                if (!temp.equals("-")) {
-                    sell_cash.add(temp);
-                } else {
-                    sell_cash.add("無資料");
-                }
-                // 3.即期買入
-                start1 = urlData.indexOf(
-                        "<td data-table=\"本行即期買入\" class=\"rate-content-sight text-right print_hide\" data-hide=\"phone\">",
-                        end + 1);
-                end = urlData.indexOf("</td>", start1 + 1);
-                temp = urlData.substring(start1 + 91, end);
-                if (!temp.equals("-")) {
-                    buy_curren_rate.add(temp);
-                } else {
-                    buy_curren_rate.add("無資料");
-                }
-                //4. 即期賣出
-                start1 = urlData.indexOf(
-                        "<td data-table=\"本行即期賣出\" class=\"rate-content-sight text-right print_hide\" data-hide=\"phone\">",
-                        end + 1);
-                end = urlData.indexOf("</td>", start1 + 1);
-                temp = urlData.substring(start1 + 91, end);
-                if (!temp.equals("-")) {
-                    sell_current_rate.add(temp);
-                } else {
-                    sell_current_rate.add("無資料");
-                }
-                count++;
-            } while (count < 19);
-        } catch (Exception e) {
-            Toast.makeText(MainActivity.this, e.toString(), Toast.LENGTH_LONG).show();
+    void Parser(String urlData) {
+        if (urlData == null) {
+            Toast.makeText(MainActivity.this, "資料為空", Toast.LENGTH_SHORT).show();
+        } else {
+            try {
+                String temp = null;
+                int start = 0;
+                int end = 0;
+                int count = 0;
+                do {
+                    // 1.現金買入
+                    // indexOf中的html碼要到該網頁去擷取這段html,知道我們要的頭和尾
+                    start = urlData.indexOf("<td data-table=\"本行現金買入\" class=\"rate-content-cash text-right print_hide\">",
+                            end + 1);
+                    end = urlData.indexOf("</td>", start + 1);
+                    temp = urlData.substring(start + 72, end);
+                    //如果無資料
+                    if (!temp.equals("-")) {
+                        buy_cash.add(temp);
+                    } else {
+                        buy_cash.add("無資料");
+                    }
+                    // 2.現金賣出
+                    start = urlData.indexOf("<td data-table=\"本行現金賣出\" class=\"rate-content-cash text-right print_hide\">",
+                            end + 1);
+                    end = urlData.indexOf("</td>", start + 1);
+                    temp = urlData.substring(start + 72, end);
+                    if (!temp.equals("-")) {
+                        sell_cash.add(temp);
+                    } else {
+                        sell_cash.add("無資料");
+                    }
+                    // 3.即期買入
+                    start = urlData.indexOf(
+                            "<td data-table=\"本行即期買入\" class=\"rate-content-sight text-right print_hide\" data-hide=\"phone\">",
+                            end + 1);
+                    end = urlData.indexOf("</td>", start + 1);
+                    temp = urlData.substring(start + 91, end);
+                    if (!temp.equals("-")) {
+                        buy_curren_rate.add(temp);
+                    } else {
+                        buy_curren_rate.add("無資料");
+                    }
+                    //4. 即期賣出
+                    start = urlData.indexOf(
+                            "<td data-table=\"本行即期賣出\" class=\"rate-content-sight text-right print_hide\" data-hide=\"phone\">",
+                            end + 1);
+                    end = urlData.indexOf("</td>", start + 1);
+                    temp = urlData.substring(start + 91, end);
+                    if (!temp.equals("-")) {
+                        sell_current_rate.add(temp);
+                    } else {
+                        sell_current_rate.add("無資料");
+                    }
+                    count++;
+                } while (count < 19);
+            } catch (Exception e) {
+                Toast.makeText(MainActivity.this, e.toString() + "字串切割步驟錯誤", Toast.LENGTH_LONG).show();
+            }
         }
     }
 
     //寫一個方法設定基本對話框
     // AlertDialog單一對話方塊最多只能包含 3 個動作按鈕
     AlertDialog getAlertDialog(String title) {
+
         //產生一個Builder物件(要選android app那個)
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         //設定Dialog的標題(標題可有可無)
@@ -186,12 +193,11 @@ public class MainActivity extends AppCompatActivity {
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Toast.makeText(MainActivity.this, "您按下OK按鈕", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "您查詢了" + index, Toast.LENGTH_SHORT).show();
             }
         });
         //利用Builder的create()方法建立AlertDialog
         return builder.create();
     }
-
 
 }
